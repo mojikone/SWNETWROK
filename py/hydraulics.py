@@ -10,14 +10,14 @@ Pipe inverts are computed top-down (sources → outfall):
     Junction: I_D = min(all candidates)  [deepest arriving pipe sets the level]
 
 For a monotone path this gives:
-    I_arrived = (ground_source − min_cover) − natural_slope × L
-              = ground_outfall − min_cover
+    I_arrived = I_outfall  (exactly)
 
 Feasibility check:
-    I_arrived ≥ I_outfall − min_cover  (i.e. ≥ ground_outfall − min_cover)
+    I_arrived ≥ I_outfall
 
-This is always satisfiable: monotone paths pass exactly.  Non-monotone BFS
-paths (uphill sections or sources below outfall elevation) fail and get pruned.
+I_outfall is a physical constraint (outfall structure invert).  Monotone paths
+pass exactly.  Non-monotone BFS paths (uphill sections or sources below outfall
+elevation) arrive deeper than I_outfall and are pruned.
 
 The outfall node's DISPLAY invert is set to ground_outfall (the physical
 discharge elevation).  The approach pipe arrives min_cover below that — normal
@@ -36,9 +36,10 @@ def route_topdown(G, outfall_node, I_outfall, min_slope=0.0005, min_cover=0.0):
     Rules
     -----
     - Source nodes (in_degree=0): I = ground − min_cover
-    - Edge U→D: s_recovery = (I_U − (ground_D − min_cover)) / L
+    - Edge U→D: target = I_outfall if D is outfall, else ground_D − min_cover
+                s_recovery = (I_U − target) / L
                 s_pipe = max(s_recovery, min_slope)   [grade adjustment]
-                I_D_candidate = I_U − s_pipe × L  →  arrives at ground_D − min_cover
+                I_D_candidate = I_U − s_pipe × L  →  arrives at target
                                                       when s_recovery ≥ min_slope
     - Junction:  I_D = min(candidates)   [deepest wins]
     - Feasibility: I_at_outfall ≥ I_outfall
@@ -62,17 +63,20 @@ def route_topdown(G, outfall_node, I_outfall, min_slope=0.0005, min_cover=0.0):
         if not preds:
             inverts[node] = g - min_cover
         else:
+            # Target invert for this node:
+            #   outfall node → I_outfall (physical fixed constraint)
+            #   all other nodes → g - min_cover (minimum cover requirement)
+            target = I_outfall if node == outfall_node else (g - min_cover)
+
             candidates = []
             for pred in preds:
                 if pred not in inverts:
                     continue
                 I_pred = inverts[pred]
                 L      = G.edges[pred, node]['length']
-                g_pred = G.nodes[pred]['ground_elev']
-                # Recovery slope: exactly enough descent to arrive at
-                # ground_down - min_cover.  Clamped to min_slope from below
-                # (can never be flatter than minimum gradient).
-                s_recovery = (I_pred - (g - min_cover)) / L if L > 0 else min_slope
+                # Recovery slope: exactly enough descent to arrive at target.
+                # Clamped to min_slope from below.
+                s_recovery = (I_pred - target) / L if L > 0 else min_slope
                 s_pipe     = max(s_recovery, min_slope)
                 candidates.append(I_pred - s_pipe * L)
 

@@ -95,10 +95,10 @@ if __name__ == "__main__":
         of_inverts[of_id]  = e - depth  # outfall invert = ground - depth
         print(f"         OF{of_id}: ground={e:.2f}  depth={depth:.2f}  I_outfall={of_inverts[of_id]:.2f}")
 
-    # Routing feasibility threshold: pipe arrives min_cover below outfall ground.
-    # For any monotone path this is satisfied exactly; culprits that push the
-    # arrival deeper (non-monotone BFS sections, sources below outfall) are pruned.
-    of_inverts_routing = {k: v - MIN_COVER for k, v in of_inverts.items()}
+    # Routing feasibility threshold: I_outfall is a physical constraint.
+    # Monotone paths arrive exactly at I_outfall; non-monotone paths (uphill
+    # sections, sources below outfall) arrive deeper and are pruned.
+    of_inverts_routing = dict(of_inverts)
 
     # [6] Catchment delineation (using snapped positions)
     print("\n  [6/9]  Catchment delineation (D8)...")
