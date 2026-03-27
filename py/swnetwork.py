@@ -42,7 +42,7 @@ SNAP_RADIUS  = 50.0     # m   outfall snap to high-accumulation DEM cell
 OUTFALL_SNAP_R = 30.0   # m  outfall road-snap search radius
 MIN_SLOPE    = 0.0005   # m/m minimum pipe gradient
 MIN_COVER    = 1.0      # m   minimum cover below ground
-MAX_COVER    = 3.0      # m   maximum allowable pipe depth (hard cap)
+MAX_COVER    = 2.0      # m   maximum allowable pipe depth (hard cap)
 
 
 if __name__ == "__main__":
