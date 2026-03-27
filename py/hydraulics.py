@@ -81,7 +81,7 @@ def route_topdown(G, outfall_node, I_outfall, min_slope=0.0005, min_cover=0.0):
                 candidates.append(I_pred - s_pipe * L)
 
             if not candidates:
-                inverts[node] = g - min_cover
+                inverts[node] = target
             else:
                 inverts[node] = min(candidates)
 
