@@ -276,13 +276,12 @@ def check_gravity_connectivity(G, outfall_node):
 # ── Pool re-assignment loop ────────────────────────────────────────────────────
 
 def pool_reassignment_loop(assigned, graphs, of_inverts,
-                            min_slope=0.0005, min_cover=0.0,
+                            min_slope=0.0005, min_cover=0.0, max_cover=None,
                             max_rounds=10, of_xy=None,
                             outfall_snap_r=None):
     """
     Iteratively re-assign pool channels to territories.
-    Acceptance: top-down routing for the candidate territory passes after adding
-    the channel  (I_arrived ≥ I_outfall − min_cover).
+    Acceptance: route_topdown passes AND no node exceeds max_cover.
     """
     def _endpoints(seg):
         pts = seg['pts']
@@ -349,8 +348,16 @@ def pool_reassignment_loop(assigned, graphs, of_inverts,
                     tmp_snap = min(tmp_sinks,
                                    key=lambda n: tmp_G.nodes[n]['ground_elev'])
 
-                _, status = route_topdown(
+                inv_tmp, status = route_topdown(
                     tmp_G, tmp_snap, of_inverts[of_id], min_slope, min_cover)
+
+                if status == 'PASS' and max_cover is not None:
+                    deep = any(
+                        (tmp_G.nodes[n]['ground_elev'] - inv_tmp.get(n, float('-inf'))) > max_cover
+                        for n in tmp_G.nodes()
+                    )
+                    if deep:
+                        status = 'FAIL'
 
                 if status == 'PASS':
                     graphs[of_id] = tmp_G

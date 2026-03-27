@@ -205,12 +205,13 @@ if __name__ == "__main__":
     print("\n         Pool re-assignment loop...")
     assigned = pool_reassignment_loop(
         assigned, graphs, of_inverts_routing, MIN_SLOPE, MIN_COVER,
+        max_cover=MAX_COVER,
         of_xy=of_xy_dict, outfall_snap_r=OUTFALL_SNAP_R)
 
     # Recompute inverts on final territory assignments
     # (pool reassignment adds segments whose inverts were not yet stored)
     print("\n         Recomputing inverts on final territory assignments...")
-    from hydraulics import route_topdown
+    from hydraulics import route_topdown, prune_to_feasibility
     graphs_final = build_territory_graphs(assigned, of_ids, of_xy_dict, CONNECT_TOL,
                                           outfall_snap_r=OUTFALL_SNAP_R)
     for of_id, ox, oy in of_pts:
@@ -221,14 +222,25 @@ if __name__ == "__main__":
         nxy_f = np.array([[G_f.nodes[n]['x'], G_f.nodes[n]['y']] for n in nl_f])
         _, i_f = _KDT(nxy_f).query([ox, oy])
         snap_f = nl_f[i_f]
-        fresh_inv, _ = route_topdown(
-            G_f, snap_f, of_inverts_routing[of_id], MIN_SLOPE, MIN_COVER)
-        # Outfall node display invert = ground (physical discharge elevation).
-        # The approach pipe arrives min_cover below this; the outfall headwall
-        # structure accommodates the step.  All other nodes keep their routed inverts.
+
+        fresh_inv, final_pruned, _ = prune_to_feasibility(
+            G_f, snap_f, of_inverts_routing[of_id], MIN_SLOPE, MIN_COVER,
+            max_cover=MAX_COVER)
+
+        # Segments pruned in final recompute → return to orphan
+        for seg in assigned:
+            if seg['territory'] != of_id:
+                continue
+            pts  = seg['pts']
+            nk_s = round_node(pts[0][0], pts[0][1])
+            nk_e = round_node(pts[-1][0], pts[-1][1])
+            if nk_s in final_pruned or nk_e in final_pruned:
+                seg['territory'] = None
+
         if snap_f in fresh_inv:
             fresh_inv[snap_f] = of_inverts[of_id]
         inverts_by_territory[of_id] = fresh_inv
+        pruned_by_territory[of_id]  = pruned_by_territory.get(of_id, set()) | final_pruned
         graphs[of_id] = G_f   # use final graph for write_shp
 
     # [9] Outputs
