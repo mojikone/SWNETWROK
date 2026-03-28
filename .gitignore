@@ -1,0 +1,6 @@
+py/__pycache__/
+py/*.pyc
+py/.pytest_cache/
+py/.git/
+.venv/
+.vscode/settings.json

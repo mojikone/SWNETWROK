@@ -1,0 +1,25 @@
+# SW Network v5 — Python dependencies
+# Tested on Python 3.14.2
+# Install: pip install -r requirements.txt
+
+numpy>=2.4
+geopandas>=1.1
+rasterio>=1.5
+shapely>=2.1
+networkx>=3.6
+scipy>=1.17
+ezdxf>=1.4
+matplotlib>=3.10
+pysheds>=0.5
+#
+# !! MANUAL PATCH REQUIRED FOR PYSHEDS !!
+# pysheds 0.5 uses np.in1d() which was removed in numpy 2.0.
+# pandas and rasterio require numpy 2.x, so downgrading numpy is not an option.
+# After installing, edit .venv/Lib/site-packages/pysheds/sgrid.py
+# and replace all 9 occurrences of:
+#   np.in1d(  ->  np.isin(
+# This patch will be lost if pysheds is reinstalled.
+#
+
+# Dev / testing only
+pytest>=7.0

@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run swnetwork",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/py/swnetwork.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/py",
+            "python": "${workspaceFolder}/.venv/Scripts/python.exe"
+        }
+    ]
+}
