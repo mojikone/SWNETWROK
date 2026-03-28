@@ -83,10 +83,10 @@ Open `py/swnetwork.py` and update the blocks at the top.
 
 ### File paths
 ```python
-BASE        = "D:/Projects/Renardet/SW Net - 2"
-ROADS_SHP   = f"{BASE}/W2/data/SHP/Roads.shp"
-OUTFALL_SHP = f"{BASE}/W2/data/SHP/outfall.shp"
-DEM_TIF     = f"{BASE}/W2/data/Terrain/NSA 5m test.tif"
+BASE        = "D:/path/to/repo"          # root of the cloned repository
+ROADS_SHP   = f"{BASE}/data/SHP/Roads.shp"
+OUTFALL_SHP = f"{BASE}/data/SHP/outfall.shp"
+DEM_TIF     = f"{BASE}/data/Terrain/NSA 5m test.tif"
 ```
 
 ### Hydraulic parameters
@@ -109,7 +109,6 @@ DEM_TIF     = f"{BASE}/W2/data/Terrain/NSA 5m test.tif"
 ## How to Run
 
 ```cmd
-cd W2
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r py/requirements.txt
@@ -210,7 +209,6 @@ All inputs can be in any CRS. The pipeline reprojects everything to **EPSG:32640
 ## Project Structure
 
 ```
-W2/
 ├── data/
 │   ├── SHP/           ← input road and outfall shapefiles
 │   └── Terrain/       ← input DEM (GeoTIFF)
